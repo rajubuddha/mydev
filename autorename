@@ -1,0 +1,257 @@
+import sys
+import os
+import maya.cmds as mc
+sys.path.insert(0,r"C:\Program Files\Southpaw\tactic\src\client")
+from tactic_client_lib import TacticServerStub
+a=TacticServerStub(server='gateway',user='admin',password='gateway@done',login='gateway_gate',project='super4',site="gateway")
+
+allProjects=a.eval("@GET(sthpw/project.code)")
+allProjects.remove('admin')
+allProjects.remove('dqe_dlf')
+allProjects.remove('sthpw')
+allProjects.insert(0,'----')
+
+allEp=a.eval("@GET(super4/episode.name)")
+allEp=['----']
+procesDict={'layout':'lay','blocking':'blk','secondary':'sec','lighting':'lit','fx':'fx','comp':'comp','lipsync':'lip'}
+
+def s4RenameTool():
+    
+    if mc.window("S4RenameWindow",ex=True):
+        mc.deleteUI("S4RenameWindow")
+
+    if mc.windowPref( 'S4RenameWindow', exists=True ):
+        mc.windowPref( 'S4RenameWindow', r=True)
+        
+    mc.window("S4RenameWindow",wh=(650,140),s=False,mnb=False,mxb=False)
+    mc.columnLayout('mainLay',adj=True)
+    mc.rowLayout('mrl',nc=2)
+    mc.rowLayout('r01',nc=4,cw4=[100,100,100,100],p='mrl')
+
+    mc.columnLayout('prj_lay',p='r01')
+    mc.text(l="Project",p='prj_lay')
+    mc.optionMenu('prjMenu',h=30,width=100,cc="projectChange()")
+    for i in allProjects:
+        mc.menuItem(l="%s"%i)
+
+
+    mc.columnLayout('ep_lay',p='r01')
+    mc.text(l="Episode",p='ep_lay',width=100)
+    mc.optionMenu('epMenu',h=30,width=100,cc="episodeChange()")
+    for i in allEp:
+        mc.menuItem(l="%s"%i)
+        
+        
+        
+    mc.columnLayout('seq_lay',p='r01')
+    mc.text(l="Sequence",p='seq_lay',width=100)
+    mc.optionMenu('seqMenu',h=30,width=100,cc="seqChange()")
+    for i in allProjects:
+        mc.menuItem(l="%s"%i)        
+
+    mc.columnLayout('sht_lay',p='r01')
+    mc.text(l="Shot",p='sht_lay',width=100)
+    mc.optionMenu('shtMenu',h=30,width=100,cc="shtChange()")
+    for i in allProjects:
+        mc.menuItem(l="%s"%i)
+        
+    mc.rowLayout('r02',nc=4,cw4=[100,65,65,65],p='mrl')        
+    mc.columnLayout('nx_lay',p='r02',width=100)
+    mc.text(l="Name Extra",p='nx_lay',width=100)
+    mc.textField('nx',h=30);
+
+    mc.columnLayout('proc_lay',p='r02')
+    mc.text(l="Process",p='proc_lay',width=65)
+    mc.optionMenu('procMenu',h=30,width=65)
+    for i in allProjects:
+        mc.menuItem(l="%s"%i)
+        
+    mc.columnLayout('ver_lay',p='r02',width=100)
+    mc.text(l="Version",p='ver_lay',width=100)
+
+    mc.optionMenu('verMenu',h=30)
+    for i in xrange(1,100):
+        mc.menuItem(l="%02d"%i)        
+
+    mc.text('pre_name',height=40,l="<New Name..>: ",p="mainLay",fn="boldLabelFont")
+    
+    mc.rowLayout(p='mainLay',nc=4,adj=4)
+
+    mc.button(width=150,height=40,l='Get Preview',c='getPreview()')
+    mc.button(width=150,height=40,l='Rename && Save',c='renameCmd()')
+    mc.button(width=150,height=40,l='Check Submit Eligability')
+    mc.button(width=150,height=40,l='Submit')
+    
+    mc.showWindow("S4RenameWindow")
+    
+    
+    
+s4RenameTool()
+
+def renameCmd():
+    
+    pSel=mc.optionMenu('prjMenu',q=True,v=True)
+    epSel=mc.optionMenu('epMenu',q=True,v=True)
+    seqSel=mc.optionMenu('seqMenu',q=True,v=True)
+    shtSel=mc.optionMenu('shtMenu',q=True,v=True)    
+    procSel=mc.optionMenu('procMenu',q=True,v=True)
+    nxSel=mc.textField('nx',q=True,tx=True)
+    verSel=mc.optionMenu('verMenu',q=True,v=True)
+    
+    try:
+        if nxSel:        
+            submitName="%s_%s_sc%s_%03d_%s_%s_V%s.ma"%(pSel,epSel,seqSel,int(shtSel),nxSel,procesDict[procSel],verSel)
+            mc.file(rn=submitName)
+            mc.file(save=True)
+        else:
+            submitName="%s_%s_sc%s_%03d_%s_V%s.ma"%(pSel,epSel,seqSel,int(shtSel),procesDict[procSel],verSel)
+            mc.file(rn=submitName)
+            mc.file(save=True)            
+    except:
+        
+        mc.warning('somthing wrong.......')            
+    
+
+
+
+def getPreview():
+    
+    pSel=mc.optionMenu('prjMenu',q=True,v=True)
+    epSel=mc.optionMenu('epMenu',q=True,v=True)
+    seqSel=mc.optionMenu('seqMenu',q=True,v=True)
+    shtSel=mc.optionMenu('shtMenu',q=True,v=True)    
+    procSel=mc.optionMenu('procMenu',q=True,v=True)
+    nxSel=mc.textField('nx',q=True,tx=True)
+    verSel=mc.optionMenu('verMenu',q=True,v=True)
+    
+    try:
+        if nxSel:        
+            submitName="%s_%s_sc%s_%03d_%s_%s_V%s.ma"%(pSel,epSel,seqSel,int(shtSel),nxSel,procesDict[procSel],verSel)
+            mc.text('pre_name',e=True,l=submitName)
+            
+        else:
+            submitName="%s_%s_sc%s_%03d_%s_V%s.ma"%(pSel,epSel,seqSel,int(shtSel),procesDict[procSel],verSel)
+            mc.text('pre_name',e=True,l=submitName)    
+            
+    except:
+        
+        mc.warning('select project,episode,sequence,shot,extra name,process,version..........')
+    
+def projectChange():
+    
+
+    pSel=mc.optionMenu('prjMenu',q=True,v=True)
+    allEp=['----']
+    if pSel!='----':
+        
+        mc.deleteUI('epMenu')
+        allEp=a.eval("@GET(%s/episode.name)"%pSel)
+        mc.optionMenu('epMenu',p='ep_lay',h=30,width=100,cc="episodeChange()")
+
+        for i in allEp:
+            mc.menuItem(l="%s"%i)
+            
+    else:
+        
+        mc.deleteUI('epMenu')
+        mc.optionMenu('epMenu',p='ep_lay',h=30,width=100,cc="episodeChange()")
+        for i in allEp:
+            mc.menuItem(l="%s"%i)
+            
+    episodeChange()
+        
+def episodeChange():
+    
+
+    pSel=mc.optionMenu('prjMenu',q=True,v=True)
+    epSel=mc.optionMenu('epMenu',q=True,v=True)
+    
+    if pSel!='----':
+
+        epCode=a.eval("@GET(%s/episode['name','%s'].code)"%(pSel,epSel))[0]
+        mc.deleteUI('seqMenu')
+        allSeq=a.eval("@GET(%s/sequence['episode_code','%s'].name)"%(pSel,epCode))
+
+        if len(allSeq)==0:
+            allSeq=['----']            
+        mc.optionMenu('seqMenu',p='seq_lay',h=30,width=100,cc='seqChange()')
+        for i in allSeq:
+            mc.menuItem(l="%s"%i)
+                   
+    else:
+        
+        mc.deleteUI('seqMenu')
+        allSeq=['----']    
+        mc.optionMenu('seqMenu',p='seq_lay',h=30,width=100,cc='seqChange()')
+        for i in allSeq:
+            mc.menuItem(l="%s"%i)
+
+    seqChange()            
+            
+def seqChange():
+    
+
+    pSel=mc.optionMenu('prjMenu',q=True,v=True)
+    epSel=mc.optionMenu('epMenu',q=True,v=True)
+    seqSel=mc.optionMenu('seqMenu',q=True,v=True)
+
+
+    if pSel!='----' and epSel !='----' and seqSel !='----' :
+        
+        epCode=a.eval("@GET(%s/episode['name','%s'].code)"%(pSel,epSel))[0]
+        seqCode=a.eval("@GET(%s/sequence['episode_code','%s']['name','%s'].code)"%(pSel,epCode,seqSel))[0]        
+        mc.deleteUI('shtMenu')
+        allSht=a.eval("@GET(%s/shot['episode_code','%s']['sequence_code','%s'].name)"%(pSel,epCode,seqCode))
+
+        if len(allSht)==0:
+            allSht=['----']            
+        mc.optionMenu('shtMenu',p='sht_lay',h=30,width=100,cc='shtChange()')
+        for i in allSht:
+            mc.menuItem(l="%s"%i)
+                   
+    else:
+        
+        mc.deleteUI('shtMenu')
+        allSht=['----']    
+        mc.optionMenu('shtMenu',p='sht_lay',h=30,width=100,cc='shtChange()')
+        for i in allSht:
+            mc.menuItem(l="%s"%i)
+
+    shtChange()            
+            
+            
+def shtChange():
+    
+
+    pSel=mc.optionMenu('prjMenu',q=True,v=True)
+    epSel=mc.optionMenu('epMenu',q=True,v=True)
+    seqSel=mc.optionMenu('seqMenu',q=True,v=True)
+    shtSel=mc.optionMenu('shtMenu',q=True,v=True)
+
+   
+
+
+    if pSel!='----' and epSel !='----' and seqSel !='----' and shtSel !='----' :
+        
+        epCode=a.eval("@GET(%s/episode['name','%s'].code)"%(pSel,epSel))[0]
+
+        seqCode=a.eval("@GET(%s/sequence['episode_code','%s']['name','%s'].code)"%(pSel,epCode,seqSel))[0]        
+        
+        mc.deleteUI('procMenu')
+        
+        allSht=a.eval("@SOBJECT(%s/shot['episode_code','%s']['sequence_code','%s']['name','%s'])"%(pSel,epCode,seqCode,shtSel))
+        
+        allProcess=a.get_pipeline_processes(search_key=allSht[0]['__search_key__'], recurse=False)            
+        if len(allProcess)==0:
+            allSht=['----']            
+        mc.optionMenu('procMenu',p='proc_lay',h=30,width=70)
+        for i in allProcess:
+            mc.menuItem(l="%s"%i)
+                   
+    else:
+        
+        mc.deleteUI('procMenu')
+        allSht=['----']    
+        mc.optionMenu('procMenu',p='proc_lay',h=30,width=70)
+        for i in allSht:
+            mc.menuItem(l="%s"%i)                         
