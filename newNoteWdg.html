@@ -1,0 +1,56 @@
+<!-- HTML-->
+
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+    
+}
+#alter
+{
+text-align: center;
+}
+#noteTitle
+{
+    font-weight:bold;
+}
+
+
+
+</style>
+<div class="myNote">
+<%
+from tactic_client_lib import TacticServerStub
+
+ser=TacticServerStub()
+sk=kwargs['search_key']
+sk=sk.split("=")[-1]
+n="<table>"
+c=1
+for i in ser.eval("@SOBJECT(sthpw/task['code','{0}'].mydev/shot.sthpw/note['@ORDER_BY','timestamp'])".format(sk)):
+    if c%2==0:
+        n+='<tr><td id="noteTitle">'+i['process'].title()+' at '+i['timestamp'].split(".")[0][0:-3]+"</td></tr>"
+        n+='<tr><td id="alter">'+i['note']+"</td></tr>"
+    else:
+        n+='<tr><td id="noteTitle" >'+i['process'].title()+' at '+i['timestamp'].split(".")[0][0:-3]+"</td></tr>"
+        n+="<tr><td>"+i['note']+"</td></tr>"
+    c+=1
+   
+ 
+
+n+="</table>"
+%>
+${n}
+</div>
+
