@@ -1,0 +1,234 @@
+<config>
+ <example02 include_mako="true"> 
+
+<html>
+
+
+<br/>
+<br/>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+
+
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: center;
+	font-weight: bold;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+.status_top
+{
+	margin-left:100px;
+	float:left;	
+}
+.right_side
+{
+	width:100px;
+	float:left;
+	height:100%;
+}
+</style>
+<div class="status_top">
+<div><h1>Render Status Report</h1></div>
+<br/>
+<br/>
+<![CDATA[
+<%
+from tactic_client_lib import TacticServerStub
+ser=TacticServerStub()
+process=['render','blocking','secondary','lit','fx','layout']
+
+mSelRen='<select style="float:right;width:100px;height:30px;" id="process_pick_sel" class="process_pick_cls">\n'
+for i in process:
+    mSelRen+='<option value="%s">%s</option>\n'%(i,i)
+mSelRen+='</select>'
+
+%>]]>
+<h2 style="float:left;">Total Render Tasks in Episode:<div style="float:right;" id="TC_ren"></div></h2>
+${mSelRen}
+<div>Start Date:</div>
+<input type="date"  id="sDate" class="sDate_gt_report" />
+<div>End Date:</div>
+<input type="date"  id="eDate" class="eDate_gt_report" />
+<input type="button" value="Refresh" style="float:right;width:100px;height:30px;" class="ren_refresh"/>
+<table width="600">
+	<tr height="30">
+		<th width="100">Status</th>
+		<th width="100"></th>
+		<th width="100">Count</th>
+		<th  width="100">Parcent</th>
+		<th  width="100"></th>
+	</tr>
+	<tr>
+	<td width="100">YTS</td>
+	<td width="100"></td>
+	<td width="100" id="YTS_ren"></td>
+	<td width="100" id="YTS_ren_par"></td>
+	</tr>	
+	<tr>
+	<td width="100">Pending</td>
+	<td width="100"></td>
+	<td width="100" id="Pending_ren"></td>
+	<td width="100" id="Pending_ren_par"></td>
+	</tr>
+	<tr>
+	<td width="100">WIP</td>
+	<td width="100"></td>
+	<td width="100" id="WIP_ren"></td>
+	<td width="100" id="WIP_ren_par"></td>
+	</tr>
+	<tr>
+	<td width="100">Done</td>
+	<td width="100"></td>
+	<td width="100" id="Done_ren"></td>
+	<td width="100" id="Done_ren_par"></td>
+	</tr>
+	
+
+</table>
+
+</div>
+<div class="right_side">
+<p/>
+</div>
+
+</html>
+<behavior class="status_top">
+{
+"type":"load","cbjs_action":'''
+
+var server=TacticServerStub.get();
+var cReportProcess=document.getElementById("process_pick_sel").value;
+var t_day=server.eval("$1_DAY_AHEAD");
+var onlySDay=t_day.split(" ");
+var y_day=server.eval("$5_DAY_AGO");
+var onlyEDay=y_day.split(" ");
+
+document.getElementById("sDate").value=onlyEDay[0];
+document.getElementById("eDate").value=onlySDay[0];
+
+var sDate_rep=document.getElementById("sDate").value;
+var eDate_rep=document.getElementById("eDate").value;
+
+var yr=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','Assignment'].sthpw/task['process','"+cReportProcess+"'])");
+var ar=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','Pending'].sthpw/task['process','"+cReportProcess+"'])");
+var wipr=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','In Progress'].sthpw/task['process','"+cReportProcess+"'])");
+var doner=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','In Complete'].sthpw/task['process','"+cReportProcess+"'])");
+
+var tcr=server.eval("@COUNT(sthpw/task['process','"+cReportProcess+"'])");
+
+
+document.getElementById("YTS_ren").innerHTML=yr;
+document.getElementById("Pending_ren").innerHTML=ar;
+document.getElementById("WIP_ren").innerHTML=wipr;
+document.getElementById("Done_ren").innerHTML=doner;
+document.getElementById("TC_ren").innerHTML=tcr;
+
+var y_ren_par=(yr/tcr)*100;
+var p_ren_par=(ar/tcr)*100;
+var w_ren_par=(wipr/tcr)*100;
+var d_ren_par=(doner/tcr)*100;
+
+document.getElementById("YTS_ren_par").innerHTML=y_ren_par.toPrecision(3);
+document.getElementById("Pending_ren_par").innerHTML=p_ren_par.toPrecision(3);
+document.getElementById("WIP_ren_par").innerHTML=w_ren_par.toPrecision(3);
+document.getElementById("Done_ren_par").innerHTML=d_ren_par.toPrecision(3);
+
+'''
+}
+</behavior>
+
+<behavior class="ren_refresh">
+{
+"type":"click_up","cbjs_action":'''
+
+var server=TacticServerStub.get();
+var cReportProcess=document.getElementById("process_pick_sel").value;
+
+var sDate_rep=document.getElementById("sDate").value;
+var eDate_rep=document.getElementById("eDate").value;
+
+var yr=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','Assignment'].sthpw/task['process','"+cReportProcess+"'])");
+var ar=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','Pending'].sthpw/task['process','"+cReportProcess+"'])");
+var wipr=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','In Progress'].sthpw/task['process','"+cReportProcess+"'])");
+var doner=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','In Complete'].sthpw/task['process','"+cReportProcess+"'])");
+
+var tcr=server.eval("@COUNT(sthpw/task['process','"+cReportProcess+"'])");
+
+
+document.getElementById("YTS_ren").innerHTML=yr;
+document.getElementById("Pending_ren").innerHTML=ar;
+document.getElementById("WIP_ren").innerHTML=wipr;
+document.getElementById("Done_ren").innerHTML=doner;
+document.getElementById("TC_ren").innerHTML=tcr;
+
+var y_ren_par=(yr/tcr)*100;
+var p_ren_par=(ar/tcr)*100;
+var w_ren_par=(wipr/tcr)*100;
+var d_ren_par=(doner/tcr)*100;
+
+document.getElementById("YTS_ren_par").innerHTML=y_ren_par.toPrecision(3);
+document.getElementById("Pending_ren_par").innerHTML=p_ren_par.toPrecision(3);
+document.getElementById("WIP_ren_par").innerHTML=w_ren_par.toPrecision(3);
+document.getElementById("Done_ren_par").innerHTML=d_ren_par.toPrecision(3);
+
+'''
+}
+</behavior>
+
+<behavior class="process_pick_cls">
+{
+"type":"change","cbjs_action":'''
+
+var server=TacticServerStub.get();
+var cReportProcess=document.getElementById("process_pick_sel").value;
+
+
+var sDate_rep=document.getElementById("sDate").value;
+var eDate_rep=document.getElementById("eDate").value;
+
+var yr=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','Assignment'].sthpw/task['process','"+cReportProcess+"'])");
+var ar=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','Pending'].sthpw/task['process','"+cReportProcess+"'])");
+var wipr=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','In Progress'].sthpw/task['process','"+cReportProcess+"'])");
+var doner=server.eval("@COUNT(sthpw/status_log['timestamp','is after','"+sDate_rep+"']['timestamp','is before','"+eDate_rep+"']['to_status','In Complete'].sthpw/task['process','"+cReportProcess+"'])");
+
+var tcr=server.eval("@COUNT(sthpw/task['process','"+cReportProcess+"'])");
+
+
+document.getElementById("YTS_ren").innerHTML=yr;
+document.getElementById("Pending_ren").innerHTML=ar;
+document.getElementById("WIP_ren").innerHTML=wipr;
+document.getElementById("Done_ren").innerHTML=doner;
+document.getElementById("TC_ren").innerHTML=tcr;
+
+var y_ren_par=(yr/tcr)*100;
+var p_ren_par=(ar/tcr)*100;
+var w_ren_par=(wipr/tcr)*100;
+var d_ren_par=(doner/tcr)*100;
+
+document.getElementById("YTS_ren_par").innerHTML=y_ren_par.toPrecision(3);
+document.getElementById("Pending_ren_par").innerHTML=p_ren_par.toPrecision(3);
+document.getElementById("WIP_ren_par").innerHTML=w_ren_par.toPrecision(3);
+document.getElementById("Done_ren_par").innerHTML=d_ren_par.toPrecision(3);
+
+'''
+}
+</behavior>
+
+
+
+
+
+
+
+
+</example02>
+ </config>
