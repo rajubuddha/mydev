@@ -1,0 +1,48 @@
+<config>
+ <example02 include_mako="true"> 
+<html>
+<style>
+.ren_refresh,.process_pick_cls
+{
+border-radius:3px;
+}
+</style>
+
+<div class="status_top" style="padding:30px;width:300px;height:200px">
+<div><h1>Make Split Tasks</h1></div>
+<br/>
+<![CDATA[
+<%
+from tactic_client_lib import TacticServerStub
+ser=TacticServerStub()
+process=ser.eval('@GET(sthpw/login.login)')
+mSelRen='<select style="float:left;width:100px;height:30px;" id="process_pick_sel" class="process_pick_cls">\n'
+for i in process:
+    mSelRen+='<option value="%s">%s</option>\n'%(i,i)
+mSelRen+='</select>'
+
+%>]]>
+${mSelRen}
+<input type="button" value="Refresh" style="float:right;width:100px;height:30px;padding:5px;" class="ren_refresh"/>
+
+</div>
+
+</html>
+
+<behavior class="ren_refresh">
+{
+"type":"click_up","cbjs_action":'''
+
+var server=TacticServerStub.get();
+var cReportProcess=document.getElementById("process_pick_sel").value;
+spt.alert(bvr.kwargs.inKey+","+cReportProcess);
+var res=server.insert("mydev/split_shot",data={"name":"test"});
+//spt.alert(res.__search_key__);
+server.create_task(search_key=res.__search_key__,{'process':"split_task",'assigned':cReportProcess});
+
+'''
+}
+</behavior>
+
+</example02>
+ </config>
