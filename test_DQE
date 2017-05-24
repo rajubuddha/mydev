@@ -1,0 +1,20 @@
+1.What is break and continue statements?
+2.What is the equivalent code of the following statement in WHILE LOOP format?
+3.What is variable initialization and why is it important?
+4.What is a nested loop?
+5.What is the modulus operator?
+6.Which of the following operators is incorrect and why? ( >=, <=, <>, ==)
+7.What is a “Switch”,When is a “switch” statement preferable over an “if” statement?
+8.What is the difference between list and tuple?
+9.What is Dict and List comprehensions are?
+10.In Python what is slicing?
+11.What are generators in Python?
+12.What is the difference between Xrange and range?
+13.Write a program for making a log file?
+14.Why readline method?
+15.What is threading?
+16.Write ax threading threading program?
+17.How compile a string pattern in regular expression?
+18.How search and replace using regular expression?
+19.How to run an external application from python?
+20.How copy a file to a destination path?
