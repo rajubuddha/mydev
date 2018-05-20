@@ -23,3 +23,9 @@ def make_square_ctrl(parent="",radius=1):
 make_recurcive_grps(root=rig_name,data=data)
 make_square_ctrl(parent="POS",radius=1.5)
 make_square_ctrl(parent="ADJ",radius=1)
+
+object="ADJ"
+non_keyable_attrs=["s","sx","sz","sy","v"]
+for atr in non_keyable_attrs:
+    mc.setAttr("%s.%s"%(object,atr),k=False)
+    mc.setAttr("%s.%s"%(object,atr),l=True)
