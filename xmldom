@@ -1,0 +1,21 @@
+import xml.dom.minidom as xd
+
+root=xd.Document()
+data=root.createTextNode
+top=root.createElement('html')
+root.appendChild(top)
+tab=root.createElement('table')
+top.appendChild(tab)
+for i in range(10):
+    tr=root.createElement('tr')
+    tab.appendChild(tr)
+    for j in range(5):
+        td=root.createElement('td')
+        td.setAttribute('class','mycalss')
+        td.appendChild(data('test data%3d'%j))
+        tr.appendChild(td)
+        tp=root.createElement('p')
+        tp.appendChild(data('rajubuddha'))
+        td.appendChild(tp)        
+with open('E:/test_xml.html','w') as cf:
+    cf.write(tab.toprettyxml(indent='\t').replace('<?xml version="1.0" ?>\n',''))
