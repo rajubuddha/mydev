@@ -8,7 +8,7 @@
 strike
 
 
-```java
+```python
 def all_items():
     for i in range(10):
         print(i)
